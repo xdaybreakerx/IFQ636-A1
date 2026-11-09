@@ -24,8 +24,8 @@ function App() {
                 />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/my-events" element={<MyEvents />} />
-                <Route path="/open-events" element={<OpenEvents />} />
+                <Route path="/mine" element={<MyEvents />} />
+                <Route path="/open" element={<OpenEvents />} />
             </Routes>
         </Router>
     );
