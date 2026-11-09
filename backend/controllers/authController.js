@@ -47,6 +47,13 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res
+            .status(400)
+            .json({ message: 'Email and password are required' });
+    }
+
     try {
         const user = await User.findOne({ email });
         if (user && (await bcrypt.compare(password, user.password))) {
@@ -54,6 +61,7 @@ const loginUser = async (req, res) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
                 token: generateToken(user.id),
             });
         } else {
@@ -64,47 +72,4 @@ const loginUser = async (req, res) => {
     }
 };
 
-const getProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        res.status(200).json({
-            name: user.name,
-            email: user.email,
-            university: user.university,
-            address: user.address,
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
-    }
-};
-
-const updateUserProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
-
-        const { name, email, university, address } = req.body;
-        user.name = name || user.name;
-        user.email = email || user.email;
-        user.university = university || user.university;
-        user.address = address || user.address;
-
-        const updatedUser = await user.save();
-        res.json({
-            id: updatedUser.id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            university: updatedUser.university,
-            address: updatedUser.address,
-            token: generateToken(updatedUser.id),
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-module.exports = { registerUser, loginUser, updateUserProfile, getProfile };
+module.exports = { registerUser, loginUser };

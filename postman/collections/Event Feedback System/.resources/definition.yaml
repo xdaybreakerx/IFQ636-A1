@@ -1,4 +1,4 @@
 $kind: collection
 variables:
-  baseUrl: "http://localhost:5001"
+  baseUrl: http://localhost:5001
   registeredEmail: ""
