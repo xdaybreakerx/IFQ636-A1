@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "name": "Test Attendee",
+        "email": "{{registeredEmail}}",
+        "password": "password123"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('returns 400', () => pm.response.to.have.status(400));
+      pm.test('duplicate message', () => pm.expect(pm.response.json().message).to.eql('An account with this email already exists'));
+    language: text/javascript
+order: 1808

@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "name": "Test Attendee",
+        "email": "{{$randomEmail}}",
+        "password": "password123"
+    }
+scripts:
+  - type: beforeRequest
+    code: ""
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('returns 201', () => pm.response.to.have.status(201));
+      pm.test('new account is an attendee', () => pm.expect(pm.response.json().role).to.eql('attendee'));
+      pm.collectionVariables.set('registeredEmail', pm.response.json().email);
+    language: text/javascript
+order: 1000
