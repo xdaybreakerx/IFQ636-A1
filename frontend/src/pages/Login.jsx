@@ -12,6 +12,7 @@ const Login = () => {
     const [successMessage, setSuccessMessage] = useState(
         location.state?.message || '',
     );
+    const [errorMessage, setErrorMessage] = useState('');
 
     // remove the message from history so it doesn't come back on refresh
     useEffect(() => {
@@ -37,7 +38,7 @@ const Login = () => {
             } else {
                 setErrorMessage('An error occurred. Please try again.');
             }
-            setFormDate({ ...formData, password: '' });
+            setFormData({ ...formData, password: '' });
         }
     };
 
