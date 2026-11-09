@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
+import Alert from '../components/Alert';
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const successMessage = location.state?.message || '';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,6 +32,7 @@ const Login = () => {
                 className="bg-white p-6 shadow-md rounded"
             >
                 <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
+                <Alert type="success" message={successMessage} />
                 <input
                     type="email"
                     placeholder="Email"
