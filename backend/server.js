@@ -1,11 +1,9 @@
-
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
 dotenv.config();
-
 
 const app = express();
 
@@ -19,7 +17,6 @@ if (require.main === module) {
     // If the file is run directly, start the server
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-  }
+}
 
-
-module.exports = app
+module.exports = app;
