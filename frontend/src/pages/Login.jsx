@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
@@ -9,10 +9,20 @@ const Login = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const successMessage = location.state?.message || '';
+    const [successMessage, setSuccessMessage] = useState(
+        location.state?.message || '',
+    );
+
+    // remove the message from history so it doesn't come back on refresh
+    useEffect(() => {
+        if (location.state?.message) {
+            navigate(location.pathname, { replace: true });
+        }
+    }, [location, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSuccessMessage('');
         try {
             const response = await axiosInstance.post(
                 '/api/auth/login',
