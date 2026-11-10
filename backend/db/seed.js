@@ -26,7 +26,6 @@ const seedOrganiser = async () => {
         });
         if (existingOrganiser) {
             console.log('Organiser user already exists. Skipping creation.');
-            return;
         } else {
             await User.create({
                 name: ORGANISER_NAME || 'Organiser',
@@ -62,7 +61,6 @@ const seedAttendee = async () => {
         });
         if (existingAttendee) {
             console.log('Attendee user already exists. Skipping creation.');
-            return;
         } else {
             await User.create({
                 name: ATTENDEE_NAME || 'Attendee',
