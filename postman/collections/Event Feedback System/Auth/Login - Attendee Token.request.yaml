@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/login"
+method: POST
+body:
+  type: json
+  content: '{ "email": "attendee@example.com", "password": "{{attendee_password}}" }'
+scripts:
+  - type: afterResponse
+    code: pm.collectionVariables.set('attendee_token', pm.response.json().token);
+    language: text/javascript
+order: 5668
