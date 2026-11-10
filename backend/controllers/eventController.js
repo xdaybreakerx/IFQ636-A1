@@ -55,6 +55,22 @@ const getMyEvents = async (req, res) => {
     }
 };
 
+// events attendees can leave feedback on right now
+const getOpenEvents = async (req, res) => {
+    try {
+        // sorting by endDate is the same as sorting by closesAt (end + 240h)
+        const events = await Event.find({ status: 'open' }).sort({
+            endDate: 1,
+        });
+
+        // use the model method so the window rule is only written in one place
+        const openEvents = events.filter((event) => event.isFeedbackOpen());
+        res.json(openEvents);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const updateEventStatus = async (req, res) => {
     const { status } = req.body;
 
@@ -97,4 +113,4 @@ const updateEventStatus = async (req, res) => {
     }
 };
 
-module.exports = { createEvent, getMyEvents, updateEventStatus };
+module.exports = { createEvent, getMyEvents, getOpenEvents, updateEventStatus };
