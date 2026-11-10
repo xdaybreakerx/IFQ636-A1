@@ -8,4 +8,8 @@ auth:
   type: bearer
   credentials:
     token: "{{attendee_token}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('status is 403', () => pm.response.to.have.status(403));
+    language: text/javascript
 order: 5000

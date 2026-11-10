@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "title": "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901",
+        "startDate": "2026-11-12T08:00:00.000Z",
+        "endDate": "2026-11-12T10:00:00.000Z"
+    }
+auth:
+  type: inherit
+  credentials:
+    id: 54c2d866-bba7-49b7-9dbb-cd1d1c1656bf
+scripts:
+  - type: afterResponse
+    code: pm.test('status is 400', () => pm.response.to.have.status(400));
+    language: text/javascript
+order: 4436
