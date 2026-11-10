@@ -3,7 +3,11 @@ url: "{{baseUrl}}/api/auth/login"
 method: POST
 body:
   type: json
-  content: '{ "email": "attendee@example.com", "password": "{{attendee_password}}" }'
+  content: |-
+    {
+        "email": "attendee@example.com",
+        "password": "{{attendee_password}}"
+    }
 scripts:
   - type: afterResponse
     code: pm.collectionVariables.set('attendee_token', pm.response.json().token);
