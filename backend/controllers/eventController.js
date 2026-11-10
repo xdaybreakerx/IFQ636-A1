@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const mongoose = require('mongoose');
 
 const createEvent = async (req, res) => {
     const { title, description, location, startDate, endDate } = req.body;
@@ -6,7 +7,7 @@ const createEvent = async (req, res) => {
     const errors = {};
 
     if (!title || !title.trim()) {
-        errors.title = 'Title is required'; 
+        errors.title = 'Title is required';
     } else if (title.length > 100) {
         errors.title = 'Title must be less than 100 characters';
     }
@@ -24,7 +25,7 @@ const createEvent = async (req, res) => {
     }
 
     if (Object.keys(errors).length > 0) {
-        return res.status(400).json({message: 'Validation failed', errors});
+        return res.status(400).json({ message: 'Validation failed', errors });
     }
 
     try {
@@ -45,11 +46,55 @@ const createEvent = async (req, res) => {
 // only the logged in organisers events
 const getMyEvents = async (req, res) => {
     try {
-        const events = await Event.find({ organiser: req.user.id }).sort({startDate: -1 });
+        const events = await Event.find({ organiser: req.user.id }).sort({
+            startDate: -1,
+        });
         res.json(events);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-module.exports = { createEvent, getMyEvents };
+const updateEventStatus = async (req, res) => {
+    const { status } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Event not found' });
+    }
+
+    try {
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        if (event.organiser.toString() !== req.user.id) {
+            return res
+                .status(403)
+                .json({ message: 'You can only change your own events' });
+        }
+
+        // only draft -> open and open -> closed are allowed
+        const allowedNext = { draft: 'open', open: 'closed' };
+        if (allowedNext[event.status] !== status) {
+            return res.status(400).json({
+                message: `Can't change status from ${event.status} to ${status}`,
+            });
+        }
+
+        if (status === 'open' && Date.now() >= event.closesAt.getTime()) {
+            return res.status(400).json({
+                message:
+                    'The feedback window for this event has already passed',
+            });
+        }
+
+        event.status = status;
+        await event.save();
+        res.json(event);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { createEvent, getMyEvents, updateEventStatus };

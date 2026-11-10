@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// feedback stays open for 10 days after the event ends
+const FEEDBACK_WINDOW_HOURS = 240;
+
 const eventSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -22,5 +25,22 @@ const eventSchema = new mongoose.Schema({
         required: true,
     },
 });
+
+eventSchema.virtual('closesAt').get(function () {
+    return new Date(
+        this.endDate.getTime() + FEEDBACK_WINDOW_HOURS * 60 * 60 * 1000,
+    );
+});
+
+eventSchema.methods.isFeedbackOpen = function () {
+    const now = Date.now();
+    return (
+        this.status === 'open' &&
+        this.startDate.getTime() <= now &&
+        now < this.closesAt.getTime()
+    );
+};
+
+eventSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Event', eventSchema);

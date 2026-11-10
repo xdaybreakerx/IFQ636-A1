@@ -1,0 +1,25 @@
+$kind: http-request
+name: Status - Valid Transition - Draft->Open
+url: "{{baseUrl}}/api/events/{{status_event_id}}/status"
+method: PATCH
+body:
+  type: json
+  content: |-
+    {
+        "status": "open"
+    }
+auth:
+  type: inherit
+  credentials:
+    id: 54c2d866-bba7-49b7-9dbb-cd1d1c1656bf
+scripts:
+  - type: afterResponse
+    code: |-
+      const event = pm.response.json();
+      const expectedClose = new Date(event.endDate).getTime() + 240 * 60 * 60 * 1000;
+
+      pm.test('status is 200', () => pm.response.to.have.status(200));
+      pm.test('event is open', () => pm.expect(event.status).to.equal('open'));
+      pm.test('closesAt is end + 240h', () => pm.expect(new Date(event.closesAt).getTime()).to.equal(expectedClose));
+    language: text/javascript
+order: 9990

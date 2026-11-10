@@ -6,3 +6,5 @@ variables:
   attendee_password: ""
   organiser_token: ""
   attendee_token: ""
+  status_event_id: ""
+  past_event_id: ""
