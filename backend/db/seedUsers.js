@@ -1,5 +1,5 @@
 // Create organiser + attendee users.
-// Run once with npm run seed.
+// Run once with npm run seed:users.
 // Run npm run reset to drop and seed the database with organiser and attendee users.
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');

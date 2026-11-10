@@ -1,5 +1,5 @@
 // Clears every collection in the database. Run once with npm run drop.
-// Run npm run reset to drop and seed the database with organiser and attendee users.
+// Run npm run reset to drop and seed the database with organiser and attendee users, and events.
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const connectDB = require('../config/db');

@@ -1,5 +1,5 @@
 // Adds sample events for the seeded organiser, one for each feedback state.
-// Run npm run seed first so the organiser exists, then npm run seed:events.
+// Run npm run seed:users first so the organiser exists, then npm run seed:events.
 // Dates are relative to now, so run npm run reset:events to get fresh dates.
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
@@ -29,7 +29,7 @@ const seedEvents = async () => {
             email: ORGANISER_EMAIL.toLowerCase(),
         });
         if (!organiser) {
-            console.error('Organiser not found. Run npm run seed first.');
+            console.error('Organiser not found. Run npm run seed:users first.');
         } else {
             const existing = await Event.countDocuments({
                 organiser: organiser._id,
