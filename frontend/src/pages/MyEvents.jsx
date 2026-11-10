@@ -10,6 +10,14 @@ const formatDate = (date) =>
         timeStyle: 'short',
     });
 
+// open events past end + 240h count as closed
+const displayStatus = (event) => {
+    if (event.status === 'open' && new Date() >= new Date(event.closesAt)) {
+        return 'closed';
+    }
+    return event.status;
+};
+
 const MyEvents = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -17,7 +25,9 @@ const MyEvents = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
-    const [successMessage] = useState(location.state?.message || '');
+    const [successMessage, setSuccessMessage] = useState(
+        location.state?.message || '',
+    );
 
     // remove the message from history so it doesn't come back on refresh
     useEffect(() => {
@@ -40,6 +50,38 @@ const MyEvents = () => {
         };
         fetchEvents();
     }, [user.token]);
+
+    const handleStatusChange = async (event, newStatus) => {
+        if (
+            newStatus === 'closed' &&
+            !window.confirm(
+                "Close feedback early? Attendees won't be able to submit, edit or delete feedback, and it can't be reopened.",
+            )
+        ) {
+            return;
+        }
+        setErrorMessage('');
+        setSuccessMessage('');
+        try {
+            const response = await axiosInstance.patch(
+                `/api/events/${event._id}/status`,
+                { status: newStatus },
+                { headers: { Authorization: `Bearer ${user.token}` } },
+            );
+            setEvents(
+                events.map((e) => (e._id === event._id ? response.data : e)),
+            );
+            setSuccessMessage(
+                newStatus === 'open'
+                    ? 'Feedback is now open.'
+                    : 'Feedback has been closed.',
+            );
+        } catch (error) {
+            setErrorMessage(
+                error.response?.data?.message || 'Could not update the event.',
+            );
+        }
+    };
 
     return (
         <div className="max-w-4xl mx-auto mt-10 px-4">
@@ -82,7 +124,7 @@ const MyEvents = () => {
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-semibold">{event.title}</h2>
                         <span className="text-sm bg-gray-200 px-2 py-1 rounded capitalize">
-                            {event.status}
+                            {displayStatus(event)}
                         </span>
                     </div>
                     <p className="text-sm text-gray-600">
@@ -94,6 +136,34 @@ const MyEvents = () => {
                             {event.location}
                         </p>
                     )}
+                    {displayStatus(event) === 'open' && (
+                        <p className="text-sm text-gray-600">
+                            Closes {formatDate(event.closesAt)}
+                        </p>
+                    )}
+                    <div className="mt-3">
+                        {event.status === 'draft' &&
+                            new Date() < new Date(event.closesAt) && (
+                                <button
+                                    onClick={() =>
+                                        handleStatusChange(event, 'open')
+                                    }
+                                    className="bg-blue-600 text-white px-3 py-1 rounded"
+                                >
+                                    Open feedback
+                                </button>
+                            )}
+                        {displayStatus(event) === 'open' && (
+                            <button
+                                onClick={() =>
+                                    handleStatusChange(event, 'closed')
+                                }
+                                className="bg-red-600 text-white px-3 py-1 rounded"
+                            >
+                                Close feedback early
+                            </button>
+                        )}
+                    </div>
                 </div>
             ))}
         </div>
