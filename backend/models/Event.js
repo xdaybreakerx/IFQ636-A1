@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { events } = require('./User');
 
 // feedback stays open for 10 days after the event ends
 const FEEDBACK_WINDOW_HOURS = 240;
