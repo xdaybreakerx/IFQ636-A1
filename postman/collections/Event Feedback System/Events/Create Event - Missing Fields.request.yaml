@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/"
+method: POST
+body:
+  type: json
+  content: "{}"
+auth:
+  type: inherit
+  credentials:
+    id: 54c2d866-bba7-49b7-9dbb-cd1d1c1656bf
+order: 2000

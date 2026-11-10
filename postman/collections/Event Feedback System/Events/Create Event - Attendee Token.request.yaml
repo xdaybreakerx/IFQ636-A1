@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/"
+method: POST
+body:
+  type: json
+  content: "{}"
+auth:
+  type: bearer
+  credentials:
+    token: "{{attendee_token}}"
+order: 5000
