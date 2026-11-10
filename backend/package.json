@@ -9,8 +9,11 @@
     "dev": "nodemon server.js",
     "prod": "node server.js",
     "drop": "node db/drop.js",
-    "seed": "node db/seed.js",
-    "reset": "npm run drop && npm run seed"
+    "reset": "npm run drop && npm run seed:users && npm run seed:events",
+    "seed:users": "node db/seedUsers.js",
+    "seed:events": "node db/seedEvents.js",
+    "drop:events": "node db/dropEvents.js",
+    "reset:events": "npm run drop:events && npm run seed:events"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

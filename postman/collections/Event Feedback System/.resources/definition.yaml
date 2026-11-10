@@ -8,3 +8,6 @@ variables:
   attendee_token: ""
   status_event_id: ""
   past_event_id: ""
+  open_live_id: ""
+  open_draft_id: ""
+  open_closed_id: ""
