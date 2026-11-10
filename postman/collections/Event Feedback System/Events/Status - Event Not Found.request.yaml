@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/invalid-id/status"
+method: PATCH
+body:
+  type: json
+  content: |-
+    {
+        "status": "open"
+    }
+auth:
+  type: inherit
+  credentials:
+    id: 54c2d866-bba7-49b7-9dbb-cd1d1c1656bf
+scripts:
+  - type: afterResponse
+    code: pm.test('status is 404', () => pm.response.to.have.status(404));
+    language: text/javascript
+order: 12990
