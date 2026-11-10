@@ -1,0 +1,10 @@
+$kind: collection
+auth:
+  - id: 54c2d866-bba7-49b7-9dbb-cd1d1c1656bf
+    type: bearer
+    name: Bearer Token
+    credentials:
+      token: "{{organiser_token}}"
+    rules:
+      url: http://localhost:5001
+order: 2000

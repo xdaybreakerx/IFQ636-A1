@@ -3,7 +3,11 @@ url: "{{baseUrl}}/api/auth/login"
 method: POST
 body:
   type: json
-  content: '{ "email": "{{registeredEmail}}", "password": "password123" }'
+  content: |-
+    {
+        "email": "{{registeredEmail}}",
+        "password": "password123"
+    }
 scripts:
   - type: afterResponse
     code: |-

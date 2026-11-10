@@ -3,7 +3,7 @@ import { useAuth, getHomePath } from '../context/AuthContext';
 
 // not logged in -> login page
 // wrong role -> home page for that role
-const protectedRoute = ({ children, role }) => {
+const ProtectedRoute = ({ children, role }) => {
     const { user } = useAuth();
 
     if (!user) {
@@ -17,4 +17,4 @@ const protectedRoute = ({ children, role }) => {
     return children;
 };
 
-export default protectedRoute;
+export default ProtectedRoute;
