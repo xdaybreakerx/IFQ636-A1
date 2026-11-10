@@ -1,0 +1,41 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/open"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{attendee_token}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      // run npm run reset:events first so the [Seed] events exist with fresh dates
+      const events = pm.response.json();
+      const titles = events.map((e) => e.title);
+      const now = Date.now();
+
+      pm.test('status is 200', () => pm.response.to.have.status(200));
+
+      pm.test('AC1 - only open events inside the feedback window', () => {
+          events.forEach((e) => {
+              pm.expect(e.status).to.equal('open');
+              pm.expect(new Date(e.startDate).getTime()).to.be.at.most(now);
+              pm.expect(new Date(e.closesAt).getTime()).to.be.above(now);
+          });
+      });
+
+      pm.test('AC1 - open seeded events are listed', () => {
+          pm.expect(titles).to.include.members([
+              '[Seed] Careers Night',
+              '[Seed] Intro to Git Workshop',
+              '[Seed] Hackathon Kick-off',
+          ]);
+      });
+
+      pm.test('AC4 - draft, closed, not started and past window are not listed', () => {
+          pm.expect(titles).to.not.include('[Seed] Draft - Alumni Panel');
+          pm.expect(titles).to.not.include('[Seed] Closed Early - Study Session');
+          pm.expect(titles).to.not.include('[Seed] Not Started - Design Sprint');
+          pm.expect(titles).to.not.include('[Seed] Window Passed - Orientation');
+      });
+    language: text/javascript
+order: 1000
