@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import MyEvents from './pages/MyEvents';
 import OpenEvents from './pages/OpenEvents';
+import CreateEvent from './pages/CreateEvent';
 
 function App() {
     const { user } = useAuth();
@@ -30,6 +31,14 @@ function App() {
                     element={
                         <ProtectedRoute role="organiser">
                             <MyEvents />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/events/new"
+                    element={
+                        <ProtectedRoute role="organiser">
+                            <CreateEvent />
                         </ProtectedRoute>
                     }
                 />
