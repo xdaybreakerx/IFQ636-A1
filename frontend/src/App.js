@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import MyEvents from './pages/MyEvents';
 import OpenEvents from './pages/OpenEvents';
 import CreateEvent from './pages/CreateEvent';
+import FeedbackForm from './pages/FeedbackForm';
 
 function App() {
     const { user } = useAuth();
@@ -47,6 +48,14 @@ function App() {
                     element={
                         <ProtectedRoute role="attendee">
                             <OpenEvents />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/events/:id/feedback"
+                    element={
+                        <ProtectedRoute role="attendee">
+                            <FeedbackForm />
                         </ProtectedRoute>
                     }
                 />
