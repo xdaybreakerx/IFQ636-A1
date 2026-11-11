@@ -71,6 +71,30 @@ const getOpenEvents = async (req, res) => {
     }
 };
 
+// get single event for feedback form
+const getEventById = async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Event not found' });
+    }
+
+    try {
+        const event = await Event.findById(req.params.id);
+
+        // drafts only visible to organiser
+        if (
+            !event ||
+            (event.status === 'draft' &&
+                event.organiser.toString() !== req.user.id)
+        ) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        res.json(event);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 const updateEventStatus = async (req, res) => {
     const { status } = req.body;
 
@@ -113,4 +137,10 @@ const updateEventStatus = async (req, res) => {
     }
 };
 
-module.exports = { createEvent, getMyEvents, getOpenEvents, updateEventStatus };
+module.exports = {
+    createEvent,
+    getMyEvents,
+    getOpenEvents,
+    getEventById,
+    updateEventStatus,
+};
