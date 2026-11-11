@@ -78,12 +78,9 @@ const submitFeedback = async (req, res) => {
 // logged in attendee's feedback with event details
 const getMyFeedback = async (req, res) => {
     try {
-        const feedback = (
-            await Feedback.find({ user: req.user._id }).populate(
-                'event',
-                'title startDate endDate status location',
-            )
-        ).toSorted({ createdAt: -1 });
+        const feedback = await Feedback.find({ user: req.user._id })
+            .populate('event', 'title startDate endDate status location')
+            .sort({ createdAt: -1 });
         res.json(feedback);
     } catch (error) {
         res.status(500).json({ message: error.message });
