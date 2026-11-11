@@ -17,9 +17,17 @@ const textQuestions = [
     { name: 'improve', label: 'What could be improved?' },
 ];
 
+// closed early has no date, so it gets its own message
+const closedMessage = (status, closesAt) =>
+    status === 'closed'
+        ? 'Feedback for this event was closed by the organiser'
+        : `Feedback for this event closed on ${formatDate(closesAt)}`;
+
 const FeedbackForm = () => {
     const { user } = useAuth();
-    const { id } = useParams();
+    // :id on /events/:id/feedback, :feedbackId on /feedback/:feedbackId/edit
+    const { id, feedbackId } = useParams();
+    const isEdit = Boolean(feedbackId);
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -36,10 +44,12 @@ const FeedbackForm = () => {
     const [blockedMessage, setBlockedMessage] = useState('');
 
     useEffect(() => {
+        const headers = { Authorization: `Bearer ${user.token}` };
+
         const fetchEvent = async () => {
             try {
                 const response = await axiosInstance.get(`/api/events/${id}`, {
-                    headers: { Authorization: `Bearer ${user.token}` },
+                    headers,
                 });
                 setEvent(response.data);
             } catch (error) {
@@ -47,8 +57,43 @@ const FeedbackForm = () => {
             }
             setLoading(false);
         };
-        fetchEvent();
-    }, [id, user.token]);
+
+        // edit: load the saved answers into the form
+        const fetchFeedback = async () => {
+            try {
+                const response = await axiosInstance.get(
+                    `/api/feedback/${feedbackId}`,
+                    { headers },
+                );
+                const feedback = response.data;
+                setEvent(feedback.event);
+                setFormData({
+                    rating: feedback.rating,
+                    metExpectations: feedback.metExpectations,
+                    workedWell: feedback.workedWell || '',
+                    improve: feedback.improve || '',
+                    anonymous: feedback.anonymous,
+                });
+                if (!feedback.feedbackOpen) {
+                    setBlockedMessage(
+                        closedMessage(feedback.event.status, feedback.closesAt),
+                    );
+                }
+            } catch (error) {
+                setErrorMessage(
+                    error.response?.data?.message ||
+                        'Could not load this feedback.',
+                );
+            }
+            setLoading(false);
+        };
+
+        if (isEdit) {
+            fetchFeedback();
+        } else {
+            fetchEvent();
+        }
+    }, [id, feedbackId, isEdit, user.token]);
 
     const tooLong =
         formData.workedWell.length > MAX_LENGTH ||
@@ -75,29 +120,35 @@ const FeedbackForm = () => {
             return;
         }
 
+        const headers = { Authorization: `Bearer ${user.token}` };
+
         try {
-            await axiosInstance.post(
-                '/api/feedback',
-                { eventId: id, ...formData },
-                { headers: { Authorization: `Bearer ${user.token}` } },
-            );
-            navigate('/events/open', {
-                state: { message: 'Thanks, your feedback was submitted' },
-            });
+            if (isEdit) {
+                await axiosInstance.put(
+                    `/api/feedback/${feedbackId}`,
+                    formData,
+                    { headers },
+                );
+                navigate('/feedback/mine', {
+                    state: { message: 'Your feedback was updated' },
+                });
+            } else {
+                await axiosInstance.post(
+                    '/api/feedback',
+                    { eventId: id, ...formData },
+                    { headers },
+                );
+                navigate('/events/open', {
+                    state: { message: 'Thanks, your feedback was submitted' },
+                });
+            }
         } catch (error) {
             const data = error.response ? error.response.data : null;
             const status = error.response ? error.response.status : null;
 
-            if (status === 403) {
-                if (data.status === 'closed') {
-                    setBlockedMessage(
-                        'Feedback for this event was closed by the organiser',
-                    );
-                } else {
-                    setBlockedMessage(
-                        `Feedback for this event closed on ${formatDate(data.closesAt)}`,
-                    );
-                }
+            // window closed; a "not yours" 403 has no closesAt and falls through
+            if (status === 403 && data.closesAt) {
+                setBlockedMessage(closedMessage(data.status, data.closesAt));
             } else if (status === 409) {
                 setBlockedMessage(data.message);
             } else if (data && data.errors) {
@@ -112,7 +163,10 @@ const FeedbackForm = () => {
 
     return (
         <div className="max-w-xl mx-auto mt-6 px-4">
-            <Link to="/events/open" className="text-sm text-gray-600">
+            <Link
+                to={isEdit ? '/feedback/mine' : '/events/open'}
+                className="text-sm text-gray-600"
+            >
                 ‹ Back
             </Link>
 
@@ -253,7 +307,7 @@ const FeedbackForm = () => {
                                 disabled={tooLong}
                                 className="w-full bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
                             >
-                                Submit
+                                {isEdit ? 'Save changes' : 'Submit'}
                             </button>
                         </form>
                     )}
