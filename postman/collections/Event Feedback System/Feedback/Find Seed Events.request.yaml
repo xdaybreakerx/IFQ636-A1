@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/events/mine"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{organiser_token}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      const events = pm.response.json();
+      const find = (title) => events.find((e) => e.title === title)._id;
+
+      pm.test('status is 200', () => pm.response.to.have.status(200));
+
+      pm.collectionVariables.set('fb_open_id', find('[Seed] Intro to Git Workshop'));
+      pm.collectionVariables.set('fb_passed_id', find('[Seed] Window Passed - Orientation'));
+    language: text/javascript
+order: 1000
