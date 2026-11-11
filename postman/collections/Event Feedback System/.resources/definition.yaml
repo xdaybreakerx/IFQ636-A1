@@ -51,3 +51,9 @@ variables:
     - key: res_other_id
       value: ''
       disabled: false
+    - key: mf_passed_id
+      value: ''
+      disabled: false
+    - key: mf_other_id
+      value: ''
+      disabled: false

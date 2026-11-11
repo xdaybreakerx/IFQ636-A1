@@ -1,0 +1,19 @@
+$kind: http-request
+url: '{{baseUrl}}/api/feedback/{{mf_other_id}}'
+method: PUT
+body:
+    type: json
+    content: |-
+        {
+            "rating": 5,
+            "metExpectations": "Yes"
+        }
+auth:
+    type: bearer
+    credentials:
+        token: '{{attendee_token}}'
+scripts:
+    - type: afterResponse
+      code: pm.test('AC5 - status is 403', () => pm.response.to.have.status(403));
+      language: text/javascript
+order: 2200

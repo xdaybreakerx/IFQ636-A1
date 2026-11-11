@@ -1,0 +1,15 @@
+$kind: http-request
+url: '{{baseUrl}}/api/events/{{fb_open_id}}/results'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{organiser_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          const results = pm.response.json();
+          pm.test('status is 200', () => pm.response.to.have.status(200));
+          pm.collectionVariables.set('mf_other_id', results.responses.find((r) => r.name === 'Sam Lee')._id);
+      language: text/javascript
+order: 1100

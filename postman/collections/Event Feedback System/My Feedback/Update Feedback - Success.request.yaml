@@ -1,0 +1,21 @@
+$kind: http-request
+url: '{{baseUrl}}/api/feedback/{{fb_id}}'
+method: PUT
+body:
+    type: json
+    content: |-
+        {
+            "rating": 1,
+            "metExpectations": "No"
+        }
+auth:
+    type: bearer
+    credentials:
+        token: '{{attendee_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          pm.test('AC2 - status is 200', () => pm.response.to.have.status(200));
+          pm.test('AC2 - rating is updated', () => pm.expect(pm.response.json().rating).to.equal(1));
+      language: text/javascript
+order: 2000
