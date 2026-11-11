@@ -27,16 +27,19 @@ const demoAttendees = [
     { name: 'Tom Walker', email: 'tom.walker@example.com' },
 ];
 
-const findOrCreateAttendee = async (attendee) => {
-    const existing = await User.findOne({ email: attendee.email });
+// second organiser so results for someone else's event can be tested (403)
+const demoOrganiser = { name: 'Alex Chen', email: 'alex.chen@example.com' };
+
+const findOrCreateDemoUser = async (demoUser, role) => {
+    const existing = await User.findOne({ email: demoUser.email });
     if (existing) {
         return existing;
     }
-    // User.create used to password hashed
+    // User.create used so the password is hashed
     return User.create({
-        ...attendee,
+        ...demoUser,
         password: process.env.ATTENDEE_PASSWORD,
-        role: 'attendee',
+        role,
     });
 };
 
@@ -107,6 +110,21 @@ const seedEvents = async (organiser) => {
             organiser: organiser._id,
         },
     ]);
+
+    // open event from another organiser, so attendees see more than one organiser
+    // and Postman can find its id through /api/events/open
+    const otherOrganiser = await findOrCreateDemoUser(
+        demoOrganiser,
+        'organiser',
+    );
+    await Event.create({
+        title: '[Seed] Other Organiser - Trivia Night',
+        startDate: fromNow(-1 * DAY - 2 * HOUR),
+        endDate: fromNow(-1 * DAY),
+        status: 'open',
+        organiser: otherOrganiser._id,
+    });
+
     console.log('Seed events created for ' + organiser.email);
     return events;
 };
@@ -121,7 +139,7 @@ const seedFeedback = async (events, attendee) => {
 
     const others = [];
     for (const demoAttendee of demoAttendees) {
-        others.push(await findOrCreateAttendee(demoAttendee));
+        others.push(await findOrCreateDemoUser(demoAttendee, 'attendee'));
     }
     const [sam, priya, tom] = others;
 
