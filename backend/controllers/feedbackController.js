@@ -4,12 +4,9 @@ const Event = require('../models/Event');
 
 const MAX_LENGTH = 500;
 
-const submitFeedback = async (req, res) => {
-    const { eventId, rating, metExpectations, workedWell, improve, anonymous } =
-        req.body;
-
+// same rules for submitting and editing
+const validateFeedback = ({ rating, metExpectations, workedWell, improve }) => {
     const errors = {};
-
     const ratingNumber = Number(rating);
 
     if (
@@ -28,6 +25,15 @@ const submitFeedback = async (req, res) => {
     if (improve && improve.length > MAX_LENGTH) {
         errors.improve = 'Must be 500 characters or less';
     }
+
+    return errors;
+};
+
+const submitFeedback = async (req, res) => {
+    const { eventId, rating, metExpectations, workedWell, improve, anonymous } =
+        req.body;
+
+    const errors = validateFeedback(req.body);
 
     if (Object.keys(errors).length > 0) {
         return res.status(400).json({ message: 'Validation fail', errors });
@@ -66,7 +72,7 @@ const submitFeedback = async (req, res) => {
         const feedback = await Feedback.create({
             event: event._id,
             user: req.user._id,
-            rating: ratingNumber,
+            rating: Number(rating),
             metExpectations,
             workedWell,
             improve,
@@ -87,13 +93,141 @@ const submitFeedback = async (req, res) => {
 // logged in attendee's feedback with event details
 const getMyFeedback = async (req, res) => {
     try {
+        // newest first, _id contains the time it was created
         const feedback = await Feedback.find({ user: req.user._id })
             .populate('event', 'title startDate endDate status location')
-            .sort({ createdAt: -1 });
+            .sort({ _id: -1 });
+
+        // the page uses these to enable or disable Edit/Delete
+        const result = feedback.map((item) => ({
+            ...item.toJSON(),
+            feedbackOpen: item.event.isFeedbackOpen(),
+            closesAt: item.event.closesAt,
+        }));
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// one of the attendee's own feedback, used to fill the edit form
+const getFeedbackById = async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    try {
+        const feedback = await Feedback.findById(req.params.id).populate(
+            'event',
+            'title startDate endDate status location',
+        );
+
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found' });
+        }
+        if (feedback.user.toString() !== req.user.id) {
+            return res
+                .status(403)
+                .json({ message: 'You can only view your own feedback' });
+        }
+
+        res.json({
+            ...feedback.toJSON(),
+            feedbackOpen: feedback.event.isFeedbackOpen(),
+            closesAt: feedback.event.closesAt,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const updateFeedback = async (req, res) => {
+    const { rating, metExpectations, workedWell, improve, anonymous } =
+        req.body;
+
+    const errors = validateFeedback(req.body);
+
+    if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ message: 'Validation fail', errors });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    try {
+        const feedback = await Feedback.findById(req.params.id).populate(
+            'event',
+        );
+
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found' });
+        }
+        if (feedback.user.toString() !== req.user.id) {
+            return res
+                .status(403)
+                .json({ message: 'You can only edit your own feedback' });
+        }
+        if (!feedback.event.isFeedbackOpen()) {
+            return res.status(403).json({
+                message: 'Feedback for this event is closed',
+                status: feedback.event.status,
+                closesAt: feedback.event.closesAt,
+            });
+        }
+
+        // only the answers can change, not the event
+        feedback.rating = Number(rating);
+        feedback.metExpectations = metExpectations;
+        feedback.workedWell = workedWell;
+        feedback.improve = improve;
+        feedback.anonymous = anonymous === true;
+
+        await feedback.save();
         res.json(feedback);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-module.exports = { submitFeedback, getMyFeedback };
+const deleteFeedback = async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    try {
+        const feedback = await Feedback.findById(req.params.id).populate(
+            'event',
+        );
+
+        if (!feedback) {
+            return res.status(404).json({ message: 'Feedback not found' });
+        }
+        if (feedback.user.toString() !== req.user.id) {
+            return res
+                .status(403)
+                .json({ message: 'You can only delete your own feedback' });
+        }
+        if (!feedback.event.isFeedbackOpen()) {
+            return res.status(403).json({
+                message: 'Feedback for this event is closed',
+                status: feedback.event.status,
+                closesAt: feedback.event.closesAt,
+            });
+        }
+
+        await feedback.deleteOne();
+        res.json({ message: 'Feedback deleted', id: req.params.id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    submitFeedback,
+    getMyFeedback,
+    getFeedbackById,
+    updateFeedback,
+    deleteFeedback,
+};

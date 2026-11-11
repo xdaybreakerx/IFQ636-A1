@@ -10,6 +10,8 @@ body:
     }
 scripts:
   - type: afterResponse
-    code: pm.collectionVariables.set('organiser_token', pm.response.json().token);
+    code: |-
+      pm.test('returns 200', () => pm.response.to.have.status(200));
+      pm.collectionVariables.set('organiser_token', pm.response.json().token);
     language: text/javascript
 order: 5808

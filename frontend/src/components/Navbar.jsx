@@ -23,9 +23,14 @@ const Navbar = () => {
                                 My events
                             </Link>
                         ) : (
-                            <Link to="/events/open" className="mr-4">
-                                Events
-                            </Link>
+                            <>
+                                <Link to="/events/open" className="mr-4">
+                                    Events
+                                </Link>
+                                <Link to="/feedback/mine" className="mr-4">
+                                    My feedback
+                                </Link>
+                            </>
                         )}
                         <button
                             onClick={handleLogout}

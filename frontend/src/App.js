@@ -14,6 +14,7 @@ import OpenEvents from './pages/OpenEvents';
 import CreateEvent from './pages/CreateEvent';
 import FeedbackForm from './pages/FeedbackForm';
 import EventResults from './pages/EventResults';
+import MyFeedback from './pages/MyFeedback';
 
 function App() {
     const { user } = useAuth();
@@ -62,6 +63,22 @@ function App() {
                 />
                 <Route
                     path="/events/:id/feedback"
+                    element={
+                        <ProtectedRoute role="attendee">
+                            <FeedbackForm />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/feedback/mine"
+                    element={
+                        <ProtectedRoute role="attendee">
+                            <MyFeedback />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/feedback/:feedbackId/edit"
                     element={
                         <ProtectedRoute role="attendee">
                             <FeedbackForm />

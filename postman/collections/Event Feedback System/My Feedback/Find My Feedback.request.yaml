@@ -1,0 +1,15 @@
+$kind: http-request
+url: '{{baseUrl}}/api/feedback/mine'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{attendee_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          const list = pm.response.json();
+          pm.test('status is 200', () => pm.response.to.have.status(200));
+          pm.collectionVariables.set('mf_passed_id', list.find((f) => f.event.title === '[Seed] Window Passed - Orientation')._id);
+      language: text/javascript
+order: 1000

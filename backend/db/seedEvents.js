@@ -59,8 +59,8 @@ const seedEvents = async (organiser) => {
         // listed on Open Events (soonest closing first)
         {
             title: '[Seed] Careers Night',
-            startDate: fromNow(-9 * DAY - 3 * HOUR),
-            endDate: fromNow(-9 * DAY),
+            startDate: fromNow(-5 * DAY - 3 * HOUR),
+            endDate: fromNow(-5 * DAY),
             status: 'open',
             organiser: organiser._id,
         },
@@ -136,6 +136,7 @@ const seedFeedback = async (events, attendee) => {
     const careers = eventId('[Seed] Careers Night');
     const git = eventId('[Seed] Intro to Git Workshop');
     const passed = eventId('[Seed] Window Passed - Orientation');
+    const closedEarly = eventId('[Seed] Closed Early - Study Session');
 
     const others = [];
     for (const demoAttendee of demoAttendees) {
@@ -205,6 +206,14 @@ const seedFeedback = async (events, attendee) => {
             user: priya._id,
             rating: 4,
             metExpectations: 'Yes',
+        },
+        // Closed Early: closed by the organiser, the other closed message (A1-16)
+        {
+            event: closedEarly,
+            user: attendee._id,
+            rating: 2,
+            metExpectations: 'No',
+            improve: 'Too noisy to get much done',
         },
         // Hackathon Kick-off has none, for the "No feedback yet" state
     ]);
