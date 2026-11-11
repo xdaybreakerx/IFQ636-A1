@@ -44,6 +44,15 @@ const submitFeedback = async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
+        // window check first, so a closed event always gives 403
+        if (!event.isFeedbackOpen()) {
+            return res.status(403).json({
+                message: 'Feedback for this event is closed',
+                status: event.status,
+                closesAt: event.closesAt,
+            });
+        }
+
         const existing = await Feedback.findOne({
             event: event._id,
             user: req.user._id,
