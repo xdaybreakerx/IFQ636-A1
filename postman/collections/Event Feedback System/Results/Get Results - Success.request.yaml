@@ -1,0 +1,33 @@
+$kind: http-request
+url: '{{baseUrl}}/api/events/{{res_event_id}}/results'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{organiser_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          const results = pm.response.json();
+
+          pm.test('status is 200', () => pm.response.to.have.status(200));
+
+          pm.test('AC1 - count, average and breakdown', () => {
+              pm.expect(results.count).to.equal(4);
+              pm.expect(results.average).to.equal(4);
+              pm.expect(results.breakdown).to.eql({ Yes: 3, Partly: 1, No: 0 });
+          });
+
+          pm.test('AC2 - one response per feedback with text answers', () => {
+              pm.expect(results.responses).to.have.lengthOf(4);
+              pm.expect(results.responses.map((r) => r.improve)).to.include('Too crowded near the end');
+          });
+
+          pm.test('AC2 - anonymous name is hidden by the API', () => {
+              const names = results.responses.map((r) => r.name);
+              pm.expect(names).to.include('Anonymous');
+              pm.expect(names).to.not.include('Priya Patel');
+              results.responses.forEach((r) => pm.expect(r).to.not.have.property('user'));
+          });
+      language: text/javascript
+order: 1100

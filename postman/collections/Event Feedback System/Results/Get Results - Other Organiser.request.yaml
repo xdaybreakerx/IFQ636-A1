@@ -1,0 +1,15 @@
+$kind: http-request
+url: '{{baseUrl}}/api/events/{{res_other_id}}/results'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{organiser_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          pm.test('AC4 - status is 403', () => pm.response.to.have.status(403));
+          pm.test('AC4 - no results in the response', () =>
+              pm.expect(pm.response.json()).to.not.have.property('responses'));
+      language: text/javascript
+order: 1300

@@ -1,0 +1,21 @@
+$kind: http-request
+url: '{{baseUrl}}/api/events/{{res_empty_id}}/results'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{organiser_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          const results = pm.response.json();
+
+          pm.test('status is 200', () => pm.response.to.have.status(200));
+          pm.test('AC3 - no responses and no average', () => {
+              pm.expect(results.count).to.equal(0);
+              pm.expect(results.average).to.equal(null);
+              pm.expect(results.breakdown).to.eql({ Yes: 0, Partly: 0, No: 0 });
+              pm.expect(results.responses).to.have.lengthOf(0);
+          });
+      language: text/javascript
+order: 1200

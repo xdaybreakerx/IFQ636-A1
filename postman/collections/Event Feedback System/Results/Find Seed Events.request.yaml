@@ -1,0 +1,22 @@
+$kind: http-request
+url: '{{baseUrl}}/api/events/open'
+method: GET
+auth:
+    type: bearer
+    credentials:
+        token: '{{attendee_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          // run npm run reset:events first so the [Seed] events exist
+          // all three are open, so the attendee list has them (incl. the other organiser's)
+          const events = pm.response.json();
+          const find = (title) => events.find((e) => e.title === title)._id;
+
+          pm.test('status is 200', () => pm.response.to.have.status(200));
+
+          pm.collectionVariables.set('res_event_id', find('[Seed] Careers Night'));
+          pm.collectionVariables.set('res_empty_id', find('[Seed] Hackathon Kick-off'));
+          pm.collectionVariables.set('res_other_id', find('[Seed] Other Organiser - Trivia Night'));
+      language: text/javascript
+order: 1000

@@ -13,6 +13,7 @@ import MyEvents from './pages/MyEvents';
 import OpenEvents from './pages/OpenEvents';
 import CreateEvent from './pages/CreateEvent';
 import FeedbackForm from './pages/FeedbackForm';
+import EventResults from './pages/EventResults';
 
 function App() {
     const { user } = useAuth();
@@ -40,6 +41,14 @@ function App() {
                     element={
                         <ProtectedRoute role="organiser">
                             <CreateEvent />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/events/:id/results"
+                    element={
+                        <ProtectedRoute role="organiser">
+                            <EventResults />
                         </ProtectedRoute>
                     }
                 />

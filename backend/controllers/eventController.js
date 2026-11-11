@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const Feedback = require('../models/Feedback');
 const mongoose = require('mongoose');
 
 const createEvent = async (req, res) => {
@@ -137,10 +138,66 @@ const updateEventStatus = async (req, res) => {
     }
 };
 
+// results for one of the organiser's events, worked out on each request (not stored)
+const getEventResults = async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(404).json({ message: 'Event not found' });
+    }
+
+    try {
+        const event = await Event.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        if (event.organiser.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: 'You can only view results for your own events',
+            });
+        }
+
+        // newest first, _id contains the time it was created
+        const feedback = await Feedback.find({ event: event._id })
+            .populate('user', 'name')
+            .sort({ _id: -1 });
+
+        let total = 0;
+        const breakdown = { Yes: 0, Partly: 0, No: 0 };
+        const responses = [];
+
+        for (const item of feedback) {
+            total += item.rating;
+            breakdown[item.metExpectations] += 1;
+
+            // name is replaced here so it never reaches the browser
+            responses.push({
+                _id: item._id,
+                name: item.anonymous ? 'Anonymous' : item.user.name,
+                rating: item.rating,
+                metExpectations: item.metExpectations,
+                workedWell: item.workedWell,
+                improve: item.improve,
+            });
+        }
+
+        res.json({
+            event,
+            count: feedback.length,
+            // raw average, the page rounds it
+            average: feedback.length > 0 ? total / feedback.length : null,
+            breakdown,
+            responses,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     createEvent,
     getMyEvents,
     getOpenEvents,
     getEventById,
     updateEventStatus,
+    getEventResults,
 };
