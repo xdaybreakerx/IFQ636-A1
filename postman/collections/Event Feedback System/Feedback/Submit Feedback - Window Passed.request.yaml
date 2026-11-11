@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/feedback"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "eventId": "{{fb_passed_id}}",
+        "rating": 4,
+        "metExpectations": "Yes"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{attendee_token}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('AC5 - status is 403', () => pm.response.to.have.status(403));
+    language: text/javascript
+order: 3000

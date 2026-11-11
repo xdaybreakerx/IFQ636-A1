@@ -1,0 +1,27 @@
+$kind: http-request
+url: '{{baseUrl}}/api/feedback'
+method: POST
+body:
+    type: json
+    content: |-
+        {
+            "eventId": "{{fb_open_id}}",
+            "rating": 4,
+            "metExpectations": "Partly",
+            "workedWell": "Good examples",
+            "improve": "More time for questions",
+            "anonymous": true
+        }
+auth:
+    type: bearer
+    credentials:
+        token: '{{attendee_token}}'
+scripts:
+    - type: afterResponse
+      code: |-
+          const feedback = pm.response.json();
+          pm.test('AC1 - status is 201', () => pm.response.to.have.status(201));
+          pm.test('AC6 - anonymous is saved', () => pm.expect(feedback.anonymous).to.equal(true));
+          pm.collectionVariables.set('fb_id', feedback._id);
+      language: text/javascript
+order: 4000

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/feedback"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "eventId": "{{fb_open_id}}"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{attendee_token}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('AC2 - status is 400', () => pm.response.to.have.status(400));
+      pm.test('AC2 - error for rating and expectations', () => {
+          const errors = pm.response.json().errors;
+          pm.expect(errors).to.have.property('rating');
+          pm.expect(errors).to.have.property('metExpectations');
+      });
+    language: text/javascript
+order: 2000
