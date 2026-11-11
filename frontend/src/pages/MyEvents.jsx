@@ -142,6 +142,15 @@ const MyEvents = () => {
                         </p>
                     )}
                     <div className="mt-3">
+                        {/* drafts can't have feedback, so no results link */}
+                        {event.status !== 'draft' && (
+                            <Link
+                                to={`/events/${event._id}/results`}
+                                className="inline-block bg-gray-700 text-white px-3 py-1 rounded mr-2"
+                            >
+                                View results
+                            </Link>
+                        )}
                         {event.status === 'draft' &&
                             new Date() < new Date(event.closesAt) && (
                                 <button
