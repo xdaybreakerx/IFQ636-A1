@@ -1,44 +1,53 @@
 $kind: collection
 variables:
-  - key: baseUrl
-    value: http://localhost:5001
-    disabled: false
-  - key: registeredEmail
-    value: ""
-    disabled: false
-  - key: organiser_password
-    value: ""
-    disabled: false
-  - key: attendee_password
-    value: ""
-    disabled: false
-  - key: organiser_token
-    secret: true
-    disabled: false
-  - key: attendee_token
-    secret: true
-    disabled: false
-  - key: status_event_id
-    value: ""
-    disabled: false
-  - key: past_event_id
-    value: ""
-    disabled: false
-  - key: open_live_id
-    value: ""
-    disabled: false
-  - key: open_draft_id
-    value: ""
-    disabled: false
-  - key: open_closed_id
-    value: ""
-    disabled: false
-  - key: fb_open_id
-    value: ""
-    disabled: false
-  - key: fb_passed_id
-    value: ""
-    disabled: false
-  - key: fb_id
-    value: ""
-    disabled: false
+    - key: baseUrl
+      value: http://localhost:5001
+      disabled: false
+    - key: registeredEmail
+      value: ''
+      disabled: false
+    - key: organiser_password
+      value: ''
+      disabled: false
+    - key: attendee_password
+      value: ''
+      disabled: false
+    - key: organiser_token
+      secret: true
+      disabled: false
+    - key: attendee_token
+      secret: true
+      disabled: false
+    - key: status_event_id
+      value: ''
+      disabled: false
+    - key: past_event_id
+      value: ''
+      disabled: false
+    - key: open_live_id
+      value: ''
+      disabled: false
+    - key: open_draft_id
+      value: ''
+      disabled: false
+    - key: open_closed_id
+      value: ''
+      disabled: false
+    - key: fb_open_id
+      value: ''
+      disabled: false
+    - key: fb_passed_id
+      value: ''
+      disabled: false
+    - key: fb_id
+      value: ''
+      disabled: false
+    - key: res_event_id
+      value: ''
+      disabled: false
+    - key: res_empty_id
+      value: ''
+      disabled: false
+    - key: res_other_id
+      value: ''
+      disabled: false
