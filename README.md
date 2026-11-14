@@ -106,8 +106,7 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 
 #### First setup
 
-1. Launch an Ubuntu EC2 instance as outlined through the required university configuration and setup documentation.
-    - Launch an Ubuntu EC2 instance in Sydney using the provided security groups, subnet, and the IFQ636-EC2-Role instance profile. Security group inbound rules: SSH (22) from my IP only, HTTP (80) from anywhere.
+1. Following the University guidelines - launch an Ubuntu EC2 instance in Sydney using the provided security groups, subnet, and the IFQ636-EC2-Role instance profile. Security group inbound rules: SSH (22) from my IP only, HTTP (80) from anywhere.
 2. Add the instance's public IP to MongoDB Atlas Network Access whitelist.
 3. SSH in and install required tools:
 
@@ -120,10 +119,11 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 4. Clone the repo, install packages, and create `backend/.env` on the server.
 
     ```bash
+    cd ~
     git clone https://github.com/xdaybreakerx/IFQ636-A1.git
-    cd /IFQ636-A1
+    cd ~/IFQ636-A1
     npm run install-all
-    cd /IFQ636-A1/backend
+    cd ~/IFQ636-A1/backend
     touch .env
     nano .env
     ```
@@ -131,7 +131,7 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 5. Start the backend and build and serve the frontend.
 
     ```bash
-    cd /IFQ636-A1/backend
+    cd ~/IFQ636-A1/backend
     pm2 start "npm run start" --name backend
 
     cd ../frontend
@@ -142,8 +142,11 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 
 6. Configure nginx to send `/api/` to port 5001 and `/` to port 3000
 
+    bash:
+
     ```bash
-    nano /etc/nginx/sites-available/default
+    # nginx config requires sudo as its owned by root
+    sudo nano /etc/nginx/sites-available/default
     ```
 
     configuration:
@@ -176,7 +179,7 @@ Changes are made locally and merged into main on GitHub, never edited on the ser
 To update on the server:
 
 ```bash
-cd /IFQ636-A1
+cd ~/IFQ636-A1
 git pull
 # OR
 # git fetch --tags && git checkout {version}
