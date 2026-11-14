@@ -4,7 +4,22 @@
 
 The Event Feedback System is a MERN app where event organisers create events, and open them for feedback. Attendees then leave a rating, and comments on events they went to.
 
-This application is forked from the unit's task manager start project.
+This application is forked from the unit's task manager starter project.
+
+## Live App
+
+### Accessing The App
+
+**Live App (EC2):** [http://3.27.143.99/](http://3.27.143.99/)
+
+![deployed shot](docs/deployed.png)
+
+### Known Deployment Limitation
+
+- The uni provided AWS EC2 instance doesn't allow use of an Elastic IP, so the public IP address changes whenever the instance is stopped and started.
+- Additionally the instances are set to stop automatically at midnight daily.
+- As such the IP address above is current as of 14-Nov-2026.
+- If the application does not load, the new IP address needs to be added to this doc, and whitelisted within the MongoDB Atlas.
 
 ## Setup
 
@@ -47,7 +62,7 @@ Download, install and verify:
         openssl rand -base64 32
         ```
 - `PORT` - default `5001` - the frontend proxies to this
-    - changable for deployment - see below
+    - changeable for deployment - see below
 - `ORGANISER_EMAIL`, `ORGANISER_PASSWORD`, `ATTENDEE_EMAIL`, `ATTENDEE_PASSWORD` - logins for the seed data
 
 3.  Seed the database
@@ -56,13 +71,13 @@ Download, install and verify:
 
     The seed functions fully drop the existing database - do not use in prod
 
-        ```bash
-        npm run reset --prefix backend
-        ```
+    ```bash
+    npm run reset --prefix backend
+    ```
 
     **INFO**
 
-    New accounts made through the register page are attendees. The organiser accounts come via either seed data, or through direct API calls.
+    New accounts made through the register page are attendees. The organiser accounts come via the seed data.
 
 4.  Run the app (backend and frontend)
 
@@ -92,6 +107,7 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 #### First setup
 
 1. Launch an Ubuntu EC2 instance as outlined through the required university configuration and setup documentation.
+    - Launch an Ubuntu EC2 instance in Sydney using the provided security groups, subnet, and the IFQ636-EC2-Role instance profile. Security group inbound rules: SSH (22) from my IP only, HTTP (80) from anywhere.
 2. Add the instance's public IP to MongoDB Atlas Network Access whitelist.
 3. SSH in and install required tools:
 
@@ -101,10 +117,13 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
     sudo npm install -g pm2
     ```
 
-4. Clone the repo and create `backend/.env` on the server.
+4. Clone the repo, install packages, and create `backend/.env` on the server.
 
     ```bash
-    cd ~/IFQ636-A1/backend
+    git clone https://github.com/xdaybreakerx/IFQ636-A1.git
+    cd /IFQ636-A1
+    npm run install-all
+    cd /IFQ636-A1/backend
     touch .env
     nano .env
     ```
@@ -112,21 +131,37 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 5. Start the backend and build and serve the frontend.
 
     ```bash
-    cd ~/IFQ636-A1/backend
-    npm ci
+    cd /IFQ636-A1/backend
     pm2 start "npm run start" --name backend
 
     cd ../frontend
-    npm ci
     npm run build
     pm2 serve build/ 3000 --name frontend --spa
     pm2 startup && pm2 save
     ```
 
 6. Configure nginx to send `/api/` to port 5001 and `/` to port 3000
-    - instructions available within the config file
 
-        `/etc/nginx/sites-available/default`
+    ```bash
+    nano /etc/nginx/sites-available/default
+    ```
+
+    configuration:
+
+    ```nginx
+    server {
+        listen 80;
+        server_name _;
+
+        location /api/ {
+            proxy_pass http://localhost:5001;
+        }
+
+        location / {
+            proxy_pass http://localhost:3000;
+        }
+    }
+    ```
 
 7. Reload nginx
 
@@ -136,15 +171,17 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 
 #### Updating
 
-Changes are merged into `main` on GitHub edited off the server - then pulled to the server.
+Changes are made locally and merged into main on GitHub, never edited on the server.
+
+To update on the server:
 
 ```bash
-cd ~/IFQ636-A1
+cd /IFQ636-A1
 git pull
 # OR
 # git fetch --tags && git checkout {version}
-cd backend && npm ci && pm2 restart backed
-cd ../fronted && npm ci && npm run build && pm2 restart frontend
+cd backend && npm ci && pm2 restart backend
+cd ../frontend && npm ci && npm run build && pm2 restart frontend
 pm2 list
 ```
 
@@ -158,21 +195,21 @@ SysML diagrams are exported from draw.io, with sources in `/docs/diagrams`
 
 The backend is split into models, controllers, and routes.
 
-- **Models:** `User` (role is `organiser` or `attendee`), `Event` (status `draft` / `open` / `closed`), `Feedback` (linked to an event and a user)
+- **Models:** `User` (role is `organiser` or `attendee`), `Event` (status `draft` / `open` / `closed`), `Feedback` (linked to an event and a user).
 - **Routes:** `/api/auth`, `/api/events`, `/api/feedback`
-- **Middleware:** `protect` checks the JWT, `requireRole` limits a route to organisers or attendees
+- **Middleware:** `protect` checks the JWT, `requireRole` limits a route to organisers or attendees.
 
 ![BDD - domain diagram](docs/diagrams/exports/bdd-domain.drawio.png)
 
 #### Frontend
 
-The react frontend stores the logged in user in Context and uses `ProtectedRoute` to stop users opening other roles pages. User tokens are stored in local storage.
+The React frontend stores the logged in user in Context and uses `ProtectedRoute` to stop users opening other roles pages. User tokens are stored in local storage.
 
 #### Deployment
 
-![BDD - structure diagram](docs/diagrams/exports/bdd-structure.drawio.png)
-
 On EC2 nginx serves on port 80. `/api` requests are sent to the Express backend on port 5001, everything else is sent to the React build on port 3000. Both run under pm2.
+
+![ibd diagram](docs/diagrams/exports/ibd.drawio.png)
 
 #### Tech Stack
 
@@ -186,22 +223,5 @@ On EC2 nginx serves on port 80. `/api` requests are sent to the Express backend 
 
 - HTTP only, no HTTPS or domain name.
 - Organiser accounts can only be created through the seed script, not the register page.
-- Automated tests only cover the backend (Some Mocha unit tests plus the Postman collection). There are no frontend tests.
+- Automated tests only cover the backend (some Mocha unit tests plus the Postman collection). There are no frontend tests.
 - Deployment is manual, no CI/CD.
-
-## Deployment
-
-### Accessing The App
-
-**Live App (EC2):** [http://8.8.8.8](http://8.8.8.88)
-
-<!-- TODO -->
-<!-- UPDATE WITH IP ADDRESS ON DAY OF RELEASE TAG -->
-
-### Known Deployment Limitation
-
-- The uni provided AWS EC2 instance doesn't allow use of an Elastic IP, so the public ip address changes whenever the instance is stopped and started.
-- Additionally the instances are set to stop automatically at midnight daily.
-- As such the IP address above is current as of DATE
-      <!-- TO DO - UPDATE DATE + SCREENSHOT DEPLOYED APP -->
-- If the application does not load, the new IP address needs to be added to this doc, and whitelisted within the MongoDB Atlas.
