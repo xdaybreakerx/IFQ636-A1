@@ -8,17 +8,29 @@ This application is forked from the unit's task manager start project.
 
 ## Setup
 
-### (local)
+### Local
 
 #### Prerequisites
 
-- Node.js >=20.0.0
-- npm
-- MongoDB (Atlas used in this project)
+Download, install and verify:
+
+1. Node.js >=20.0.0 - [install link](https://nodejs.org/en/download)
+
+2. npm - [install link](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+    - Verify installs
+
+        ```bash
+        node -v
+        npm -v
+        ```
+
+3. MongoDB
+    - Either locally - [install link](https://www.mongodb.com/docs/manual/installation/) or,
+    - Remotely via [Atlas](https://www.mongodb.com/products/platform/atlas-database)
 
 #### Steps
 
-1. Clone the repo, and install
+1. Clone the repo, and install packages
 
     ```bash
     git clone https://github.com/xdaybreakerx/IFQ636-A1.git
@@ -40,14 +52,15 @@ This application is forked from the unit's task manager start project.
 
 3.  Seed the database
 
-        **NOTE**
-        The seed functions fully drop the existing database - do not use in prod
+    **WARNING**
+
+    The seed functions fully drop the existing database - do not use in prod
 
         ```bash
         npm run reset --prefix backend
         ```
 
-    **NOTE**
+    **INFO**
 
     New accounts made through the register page are attendees. The organiser accounts come via either seed data, or through direct API calls.
 
@@ -72,7 +85,7 @@ Backend unit tests with Mocha:
 npm test --prefix backend
 ```
 
-### Deployment (manual)
+## Deployment (manual)
 
 CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 
@@ -123,15 +136,62 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 
 #### Updating
 
+Changes are merged into `main` on GitHub edited off the server - then pulled to the server.
+
+```bash
+cd ~/IFQ636-A1
+git pull
+# OR
+# git fetch --tags && git checkout {version}
+cd backend && npm ci && pm2 restart backed
+cd ../fronted && npm ci && npm run build && pm2 restart frontend
+pm2 list
+```
+
 ## Architecture
 
-### Features
+The app keeps the starter project's MVC structure.
 
-### Tech
+SysML diagrams are exported from draw.io, with sources in `/docs/diagrams`
+
+#### Backend
+
+The backend is split into models, controllers, and routes.
+
+- **Models:** `User` (role is `organiser` or `attendee`), `Event` (status `draft` / `open` / `closed`), `Feedback` (linked to an event and a user)
+- **Routes:** `/api/auth`, `/api/events`, `/api/feedback`
+- **Middleware:** `protect` checks the JWT, `requireRole` limits a route to organisers or attendees
+
+![BDD - domain diagram](docs/diagrams/exports/bdd-domain.drawio.png)
+
+#### Frontend
+
+The react frontend stores the logged in user in Context and uses `ProtectedRoute` to stop users opening other roles pages. User tokens are stored in local storage.
+
+#### Deployment
+
+![BDD - structure diagram](docs/diagrams/exports/bdd-structure.drawio.png)
+
+On EC2 nginx serves on port 80. `/api` requests are sent to the Express backend on port 5001, everything else is sent to the React build on port 3000. Both run under pm2.
+
+#### Tech Stack
+
+- Database: MongoDB Atlas
+- Backend: Node.js, Express, Mongoose, JWT auth
+- Frontend: React (Create React App), Tailwind, axios
+- Testing: Mocha + Chai (backend), Postman
+- Deployment: AWS EC2 (Ubuntu), pm2, nginx
 
 ## Known Limitations
 
-## Deployment URL
+- HTTP only, no HTTPS or domain name.
+- Organiser accounts can only be created through the seed script, not the register page.
+- Automated tests only cover the backend (Some Mocha unit tests plus the Postman collection). There are no frontend tests.
+- Deployment is manual, no CI/CD.
+
+## Deployment
+
+### Accessing The App
 
 **Live App (EC2):** [http://8.8.8.8](http://8.8.8.88)
 
@@ -145,7 +205,3 @@ CI/CD is out of scope for this assignment. Deployment is done manually over SSH.
 - As such the IP address above is current as of DATE
       <!-- TO DO - UPDATE DATE + SCREENSHOT DEPLOYED APP -->
 - If the application does not load, the new IP address needs to be added to this doc, and whitelisted within the MongoDB Atlas.
-
-```
-
-```
