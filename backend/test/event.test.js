@@ -5,7 +5,7 @@ const Event = require('../models/Event');
 describe('Event isFeedbackOpen()', () => {
     const start = new Date('2026-11-01T09:00:00Z');
     const end = new Date('2026-11-01T17:00:00Z');
-    const closesAt = end.getTime() + 240 * 60 * 60 * 1000;
+    const closesAt = end.getTime() + 24 * 60 * 60 * 1000;
     let clock;
 
     const makeEvent = (status) =>
