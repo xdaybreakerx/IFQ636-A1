@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // feedback stays open for 10 days after the event ends
-const FEEDBACK_WINDOW_HOURS = 240;
+const FEEDBACK_WINDOW_HOURS = 24;
 
 const eventSchema = new mongoose.Schema({
     title: {
